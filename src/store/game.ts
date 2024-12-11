@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
-export const WIDTH = 400;
-export const HEIGHT = 400;
+export const WIDTH = 500;
+export const HEIGHT = 500;
 const THICKNESS = 10;
 const FOOD_THICKNESS = THICKNESS * 1.5;
 
@@ -178,12 +178,7 @@ const useGameStore = create<{
     const head = snakeSegments[snakeSegments.length - 1];
     const tail = snakeSegments[0];
 
-    const gameOver = crawl(head, true);
-    if (gameOver) {
-      set({ snakeSegments, gameOver });
-      console.log(snakeSegments);
-      return;
-    }
+    const touchedBoundary = crawl(head, true);
 
     const food = get().food;
     const eatean = eat(head, food);
@@ -191,7 +186,47 @@ const useGameStore = create<{
     const removeTail = crawl(tail);
     if (removeTail) snakeSegments.shift();
 
-    set({ snakeSegments, gameOver, food: eatean ? spawnFood() : food });
+    if (touchedBoundary) {
+      switch (head.dir) {
+        case "up":
+          snakeSegments.push({
+            x: head.x,
+            y: HEIGHT,
+            w: THICKNESS,
+            h: 0,
+            dir: "up",
+          });
+          break;
+        case "right":
+          snakeSegments.push({
+            x: 0,
+            y: head.y,
+            w: 0,
+            h: THICKNESS,
+            dir: "right",
+          });
+          break;
+        case "down":
+          snakeSegments.push({
+            x: head.x,
+            y: 0,
+            w: THICKNESS,
+            h: 0,
+            dir: "down",
+          });
+          break;
+        default:
+          snakeSegments.push({
+            x: WIDTH,
+            y: head.y,
+            w: 0,
+            h: THICKNESS,
+            dir: "left",
+          });
+      }
+    }
+
+    set({ snakeSegments, food: eatean ? spawnFood() : food });
   },
   turnTo: (direction) => {
     const snakeSegments = [...get().snakeSegments];

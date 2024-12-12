@@ -242,7 +242,7 @@ const useGameStore = create<{
 }>()((set, get) => ({
   snakeSegments: [{ x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" }],
   food: spawnFood(),
-  gameOver: true,
+  gameOver: false,
   score: 0,
   crawl: () => {
     if (get().gameOver) return;

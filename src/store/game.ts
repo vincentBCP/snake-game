@@ -212,9 +212,11 @@ const useGameStore = create<{
   score: number;
   crawl: () => void;
   turnTo: (direction: "up" | "right" | "down" | "left") => void;
+  start: () => void;
 }>()((set, get) => ({
   snakeSegments: [{ x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" }],
   food: spawnFood(),
+  gameOver: false,
   score: 0,
   crawl: () => {
     if (get().gameOver) return;
@@ -330,6 +332,16 @@ const useGameStore = create<{
     }
 
     set({ snakeSegments });
+  },
+  start: () => {
+    set({
+      snakeSegments: [
+        { x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" },
+      ] as ISnakeSegment[],
+      food: spawnFood(),
+      gameOver: false,
+      score: 0,
+    });
   },
 }));
 

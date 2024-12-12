@@ -1,70 +1,15 @@
-import { useEffect, useRef } from "react";
-import useGameStore, { HEIGHT, WIDTH } from "./store/game";
+import Board from "./components/Board";
+import useGameStore from "./store/game";
 
 const App = () => {
-  const { snakeSegments, food, crawl, turnTo } = useGameStore();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const intervalRef = useRef<any>();
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-
-    if (!canvas) return;
-
-    const ctx = canvas?.getContext("2d");
-
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "black";
-    snakeSegments.map((segment) => {
-      ctx.fillRect(segment.x, segment.y, segment.w, segment.h);
-    });
-
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(food.x, food.y, food.w / 2, 0, 2 * Math.PI);
-    ctx.fill();
-    //ctx.fillRect(food.x, food.y, food.w, food.h);
-  }, [snakeSegments]);
-
-  useEffect(() => {
-    const keyup = (ev: KeyboardEvent) => {
-      switch (ev.code.toLowerCase()) {
-        case "arrowup":
-          turnTo("up");
-          break;
-        case "arrowright":
-          turnTo("right");
-          break;
-        case "arrowdown":
-          turnTo("down");
-          break;
-        case "arrowleft":
-          turnTo("left");
-          break;
-      }
-    };
-
-    intervalRef.current = setInterval(() => {
-      crawl();
-    }, 60);
-
-    document.addEventListener("keyup", keyup);
-
-    return () => {
-      clearInterval(intervalRef.current);
-      document.removeEventListener("keyup", keyup);
-    };
-  }, []);
-
+  const { score } = useGameStore();
   return (
-    <div
-      className="w-auto h-auto absolute left-[50%] top-[50%] border border-black"
-      style={{ transform: "translate(-50%, -50%)" }}
-    >
-      <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} />
+    <div className="w-screen h-screen flex flex-col items-center justify-center">
+      <h1 className="text-md font-medium mb-4 text-gray-700 uppercase">
+        Use arrows to turn
+      </h1>
+      <h1 className="text-2xl uppercase font-bold mb-6">SCORE: {score}</h1>
+      <Board />
     </div>
   );
 };

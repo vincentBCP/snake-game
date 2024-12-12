@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
-export const WIDTH = 500;
-export const HEIGHT = 500;
+export const WIDTH = 400;
+export const HEIGHT = 400;
 const THICKNESS = 10;
 const FOOD_THICKNESS = THICKNESS * 1.5;
 
@@ -209,11 +209,13 @@ const useGameStore = create<{
   snakeSegments: ISnakeSegment[];
   food: ISnakeSegment;
   gameOver?: boolean;
+  score: number;
   crawl: () => void;
   turnTo: (direction: "up" | "right" | "down" | "left") => void;
 }>()((set, get) => ({
   snakeSegments: [{ x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" }],
   food: spawnFood(),
+  score: 0,
   crawl: () => {
     if (get().gameOver) return;
 
@@ -273,7 +275,11 @@ const useGameStore = create<{
     const food = get().food;
     const eatean = eat(head, food);
 
-    set({ snakeSegments, food: eatean ? spawnFood() : food });
+    set({
+      snakeSegments,
+      food: eatean ? spawnFood() : food,
+      score: get().score + (eatean ? THICKNESS : 0),
+    });
   },
   turnTo: (direction) => {
     const snakeSegments = [...get().snakeSegments];

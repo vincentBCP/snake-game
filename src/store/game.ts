@@ -157,6 +157,54 @@ const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
   return false;
 };
 
+const bite = (head: ISnakeSegment, snakeSegments: ISnakeSegment[]) => {
+  for (let i = 0; i < snakeSegments.length - 2; i++) {
+    const segment = snakeSegments[i];
+
+    let minX, maxX, minY, maxY;
+
+    switch (segment.dir) {
+      case "up":
+      case "down":
+        minX = segment.x;
+        maxX = segment.x + THICKNESS;
+        minY = segment.y;
+        maxY = segment.y + segment.h;
+        break;
+      case "right":
+      default: // left
+        minX = segment.x;
+        maxX = segment.x + segment.w;
+        minY = segment.y;
+        maxY = segment.y + THICKNESS;
+    }
+
+    let x, y;
+
+    switch (head.dir) {
+      case "up":
+        x = head.x;
+        y = head.y;
+        break;
+      case "right":
+        x = head.x + head.w;
+        y = head.y;
+        break;
+      case "down":
+        x = head.x;
+        y = head.y + head.h;
+        break;
+      default: // left
+        x = head.x;
+        y = head.y;
+    }
+
+    if (x >= minX && x <= maxX && y >= minY && y <= maxY) return true;
+  }
+
+  return false;
+};
+
 const useGameStore = create<{
   snakeSegments: ISnakeSegment[];
   food: ISnakeSegment;
@@ -215,6 +263,11 @@ const useGameStore = create<{
 
     if (crawl(tail)) {
       snakeSegments.shift();
+    }
+
+    if (bite(head, snakeSegments)) {
+      set({ snakeSegments, gameOver: true });
+      return;
     }
 
     const food = get().food;

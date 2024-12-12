@@ -4,6 +4,7 @@ import useGameStore from "./store/game";
 
 const App = () => {
   const { score, gameOver } = useGameStore();
+
   return (
     <>
       <div className="w-screen h-screen flex flex-col items-center justify-center">

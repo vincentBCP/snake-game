@@ -91,7 +91,33 @@ const spawnFood = () => {
   } as ISnakeSegment;
 };
 
-const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
+const eat = (
+  head: ISnakeSegment,
+  snakeSegments: ISnakeSegment[],
+  food: ISnakeSegment
+) => {
+  const grow = () => {
+    const tail = snakeSegments[0];
+
+    switch (tail.dir) {
+      case "up":
+        tail.h += THICKNESS;
+        break;
+      case "right":
+        tail.x -= THICKNESS;
+        tail.w += THICKNESS;
+        break;
+      case "down":
+        tail.y -= THICKNESS;
+        tail.h += THICKNESS;
+        break;
+      default: // left
+        tail.w += THICKNESS;
+    }
+
+    return true;
+  };
+
   switch (head.dir) {
     case "up":
       if (
@@ -104,8 +130,8 @@ const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
           head.y >= food.y &&
           head.y <= food.y + FOOD_THICKNESS)
       ) {
-        head.h += THICKNESS;
-        return true;
+        // head.h += THICKNESS;
+        return grow();
       }
       break;
     case "right":
@@ -119,8 +145,8 @@ const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
           head.y + THICKNESS >= food.y &&
           head.y + THICKNESS <= food.y + FOOD_THICKNESS)
       ) {
-        head.w += THICKNESS;
-        return true;
+        // head.w += THICKNESS;
+        return grow();
       }
       break;
     case "down":
@@ -134,8 +160,8 @@ const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
           head.y + head.h >= food.y &&
           head.y + head.h <= food.y + FOOD_THICKNESS)
       ) {
-        head.h += THICKNESS;
-        return true;
+        // head.h += THICKNESS;
+        return grow();
       }
       break;
     default:
@@ -149,8 +175,8 @@ const eat = (head: ISnakeSegment, food: ISnakeSegment) => {
           head.y + THICKNESS >= food.y &&
           head.y + THICKNESS <= food.y + FOOD_THICKNESS)
       ) {
-        head.w += THICKNESS;
-        return true;
+        // head.w += THICKNESS;
+        return grow();
       }
   }
 
@@ -216,7 +242,7 @@ const useGameStore = create<{
 }>()((set, get) => ({
   snakeSegments: [{ x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" }],
   food: spawnFood(),
-  gameOver: false,
+  gameOver: true,
   score: 0,
   crawl: () => {
     if (get().gameOver) return;
@@ -275,7 +301,7 @@ const useGameStore = create<{
     }
 
     const food = get().food;
-    const eatean = eat(head, food);
+    const eatean = eat(head, snakeSegments, food);
 
     set({
       snakeSegments,

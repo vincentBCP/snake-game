@@ -20,7 +20,7 @@ const GameOver = () => {
         <h1 className="text-5xl uppercase font-bold mb-6">game over</h1>
         <p className="text-2xl uppercase font-medium mb-8">score: {score}</p>
         <button
-          className="bg-gray-700 text-white uppercase px-6 py-4 active:bg-gray-500 duration-300"
+          className="bg-gray-700 text-white font-bold uppercase px-6 py-4 active:bg-gray-500 duration-300 shadow-lg rounded-full"
           onClick={start}
         >
           play again

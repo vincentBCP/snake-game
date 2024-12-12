@@ -10,7 +10,8 @@ export interface ISnakeSegment {
   y: number;
   w: number;
   h: number;
-  dir: "up" | "right" | "down" | "left";
+  fill?: string;
+  dir?: "up" | "right" | "down" | "left";
 }
 
 const crawl = (segment: ISnakeSegment, head?: boolean) => {
@@ -81,14 +82,100 @@ const getY = () => {
   return y;
 };
 
-const spawnFood = () => {
-  return {
+const spawnFood = (snakeSegments: ISnakeSegment[]) => {
+  const food = {
     x: getX(),
     y: getY(),
     w: FOOD_THICKNESS,
     h: FOOD_THICKNESS,
-    dir: "up",
   } as ISnakeSegment;
+
+  const shift = FOOD_THICKNESS / 3;
+
+  const topL = {
+    ...food,
+    x: food.x - shift,
+    y: food.y - shift,
+  };
+  const topR = {
+    ...food,
+    x: food.x + shift,
+    y: food.y - shift,
+  };
+  const botL = {
+    ...food,
+    x: food.x - shift,
+    y: food.y + shift,
+  };
+  const botR = {
+    ...food,
+    x: food.x + shift,
+    y: food.y + shift,
+  };
+
+  for (let i = 0; i < snakeSegments.length; i++) {
+    const segment = snakeSegments[i];
+
+    if (
+      inBounds(topL, segment) ||
+      inBounds(topR, segment) ||
+      inBounds(botL, segment) ||
+      inBounds(botR, segment)
+    )
+      return spawnFood(snakeSegments);
+  }
+
+  return food;
+};
+
+const inBounds = (source: ISnakeSegment, target: ISnakeSegment) => {
+  let minX, maxX, minY, maxY;
+
+  switch (target.dir) {
+    case "up":
+    case "down":
+      minX = target.x;
+      maxX = target.x + target.w;
+      minY = target.y;
+      maxY = target.y + target.h;
+      break;
+    case "right":
+    case "left":
+      minX = target.x;
+      maxX = target.x + target.w;
+      minY = target.y;
+      maxY = target.y + target.h;
+      break;
+    default: // food
+      minX = target.x - target.w / 3;
+      maxX = target.x + target.w / 3;
+      minY = target.y - target.h / 3;
+      maxY = target.y + target.h / 3;
+  }
+
+  let x, y;
+
+  switch (source.dir) {
+    case "up":
+      x = source.x;
+      y = source.y;
+      break;
+    case "right":
+      x = source.x + source.w;
+      y = source.y;
+      break;
+    case "down":
+      x = source.x;
+      y = source.y + source.h;
+      break;
+    default: // left
+      x = source.x;
+      y = source.y;
+  }
+
+  const b = x >= minX && x <= maxX && y >= minY && y <= maxY;
+
+  return b;
 };
 
 const eat = (
@@ -96,89 +183,48 @@ const eat = (
   snakeSegments: ISnakeSegment[],
   food: ISnakeSegment
 ) => {
+  let b1, b2;
+
+  b1 = inBounds(head, food);
+
+  switch (head.dir) {
+    case "up":
+      b2 = inBounds({ ...head, x: head.x + head.w }, food);
+      break;
+    case "right":
+      b2 = inBounds({ ...head, y: head.y + head.h }, food);
+      break;
+    case "down":
+      b2 = inBounds({ ...head, x: head.x + head.w }, food);
+      break;
+    default: // left
+      b2 = inBounds({ ...head, y: head.y + head.h }, food);
+  }
+
   const grow = () => {
+    const growth = THICKNESS * 3;
     const tail = snakeSegments[0];
 
     switch (tail.dir) {
       case "up":
-        tail.h += THICKNESS;
+        tail.h += growth;
         break;
       case "right":
-        tail.x -= THICKNESS;
-        tail.w += THICKNESS;
+        tail.x -= growth;
+        tail.w += growth;
         break;
       case "down":
-        tail.y -= THICKNESS;
-        tail.h += THICKNESS;
+        tail.y -= growth;
+        tail.h += growth;
         break;
       default: // left
-        tail.w += THICKNESS;
+        tail.w += growth;
     }
 
     return true;
   };
 
-  switch (head.dir) {
-    case "up":
-      if (
-        (head.x >= food.x &&
-          head.x <= food.x + FOOD_THICKNESS &&
-          head.y >= food.y &&
-          head.y <= food.y + FOOD_THICKNESS) ||
-        (head.x + THICKNESS >= food.x &&
-          head.x + THICKNESS <= food.x + FOOD_THICKNESS &&
-          head.y >= food.y &&
-          head.y <= food.y + FOOD_THICKNESS)
-      ) {
-        // head.h += THICKNESS;
-        return grow();
-      }
-      break;
-    case "right":
-      if (
-        (head.x + head.w >= food.x &&
-          head.x + head.w <= food.x + FOOD_THICKNESS &&
-          head.y >= food.y &&
-          head.y <= food.y + FOOD_THICKNESS) ||
-        (head.x + head.w >= food.x &&
-          head.x + head.w <= food.x + FOOD_THICKNESS &&
-          head.y + THICKNESS >= food.y &&
-          head.y + THICKNESS <= food.y + FOOD_THICKNESS)
-      ) {
-        // head.w += THICKNESS;
-        return grow();
-      }
-      break;
-    case "down":
-      if (
-        (head.x >= food.x &&
-          head.x <= food.x + FOOD_THICKNESS &&
-          head.y + head.h >= food.y &&
-          head.y + head.h <= food.y + FOOD_THICKNESS) ||
-        (head.x + THICKNESS >= food.x &&
-          head.x + THICKNESS <= food.x + FOOD_THICKNESS &&
-          head.y + head.h >= food.y &&
-          head.y + head.h <= food.y + FOOD_THICKNESS)
-      ) {
-        // head.h += THICKNESS;
-        return grow();
-      }
-      break;
-    default:
-      if (
-        (head.x >= food.x &&
-          head.x <= food.x + FOOD_THICKNESS &&
-          head.y >= food.y &&
-          head.y <= food.y + FOOD_THICKNESS) ||
-        (head.x >= food.x &&
-          head.x <= food.x + FOOD_THICKNESS &&
-          head.y + THICKNESS >= food.y &&
-          head.y + THICKNESS <= food.y + FOOD_THICKNESS)
-      ) {
-        // head.w += THICKNESS;
-        return grow();
-      }
-  }
+  if (b1 || b2) return grow();
 
   return false;
 };
@@ -187,49 +233,18 @@ const bite = (head: ISnakeSegment, snakeSegments: ISnakeSegment[]) => {
   for (let i = 0; i < snakeSegments.length - 2; i++) {
     const segment = snakeSegments[i];
 
-    let minX, maxX, minY, maxY;
-
-    switch (segment.dir) {
-      case "up":
-      case "down":
-        minX = segment.x;
-        maxX = segment.x + THICKNESS;
-        minY = segment.y;
-        maxY = segment.y + segment.h;
-        break;
-      case "right":
-      default: // left
-        minX = segment.x;
-        maxX = segment.x + segment.w;
-        minY = segment.y;
-        maxY = segment.y + THICKNESS;
-    }
-
-    let x, y;
-
-    switch (head.dir) {
-      case "up":
-        x = head.x;
-        y = head.y;
-        break;
-      case "right":
-        x = head.x + head.w;
-        y = head.y;
-        break;
-      case "down":
-        x = head.x;
-        y = head.y + head.h;
-        break;
-      default: // left
-        x = head.x;
-        y = head.y;
-    }
-
-    if (x >= minX && x <= maxX && y >= minY && y <= maxY) return true;
+    if (inBounds(head, segment)) return true;
   }
 
   return false;
 };
+
+const DEFAULT_SNAKE_SEGMENTS = [
+  // { x: WIDTH / 2, y: HEIGHT - 200, w: THICKNESS, h: 200, dir: "up" },
+  { x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" },
+  // { x: WIDTH / 2, y: 0, w: THICKNESS, h: 200, dir: "down" },
+  // { x: WIDTH - 200, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "left" },
+] as ISnakeSegment[];
 
 const useGameStore = create<{
   snakeSegments: ISnakeSegment[];
@@ -240,14 +255,15 @@ const useGameStore = create<{
   turnTo: (direction: "up" | "right" | "down" | "left") => void;
   start: () => void;
 }>()((set, get) => ({
-  snakeSegments: [{ x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" }],
-  food: spawnFood(),
+  snakeSegments: DEFAULT_SNAKE_SEGMENTS.map((s) => ({ ...s })),
+  food: spawnFood(DEFAULT_SNAKE_SEGMENTS),
   gameOver: false,
   score: 0,
   crawl: () => {
     if (get().gameOver) return;
 
     const snakeSegments = [...get().snakeSegments];
+
     const head = snakeSegments[snakeSegments.length - 1];
     const tail = snakeSegments[0];
 
@@ -301,12 +317,12 @@ const useGameStore = create<{
     }
 
     const food = get().food;
-    const eatean = eat(head, snakeSegments, food);
+    const eaten = eat(head, snakeSegments, food);
 
     set({
       snakeSegments,
-      food: eatean ? spawnFood() : food,
-      score: get().score + (eatean ? THICKNESS : 0),
+      food: eaten ? spawnFood(snakeSegments) : food,
+      score: get().score + (eaten ? THICKNESS : 0),
     });
   },
   turnTo: (direction) => {
@@ -361,10 +377,8 @@ const useGameStore = create<{
   },
   start: () => {
     set({
-      snakeSegments: [
-        { x: 0, y: HEIGHT / 2, w: 200, h: THICKNESS, dir: "right" },
-      ] as ISnakeSegment[],
-      food: spawnFood(),
+      snakeSegments: DEFAULT_SNAKE_SEGMENTS.map((s) => ({ ...s })),
+      food: spawnFood(DEFAULT_SNAKE_SEGMENTS),
       gameOver: false,
       score: 0,
     });

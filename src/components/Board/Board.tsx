@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import useGameStore, { HEIGHT, WIDTH } from "../../store/game";
 
 const Board = () => {
-  const { snakeSegments, food, crawl, turnTo } = useGameStore();
+  const { snakeSegments, food, gameOver, crawl, turnTo } = useGameStore();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const intervalRef = useRef<any>();
 
@@ -22,12 +22,29 @@ const Board = () => {
       ctx.fillRect(segment.x, segment.y, segment.w, segment.h);
     });
 
-    ctx.fillStyle = "red";
+    ctx.fillStyle = food.fill || "red";
+    // ctx.beginPath();
+    // ctx.arc(food.x, food.y, food.w / 2, 0, 2 * Math.PI);
+    // ctx.fill();
+    // ctx.fillRect(food.x, food.y, food.w, food.h);
+
     ctx.beginPath();
     ctx.arc(food.x, food.y, food.w / 2, 0, 2 * Math.PI);
     ctx.fill();
-    //ctx.fillRect(food.x, food.y, food.w, food.h);
-  }, [snakeSegments]);
+  }, [food, snakeSegments]);
+
+  useEffect(() => {
+    if (gameOver) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      crawl();
+    }, 60);
+
+    return () => clearInterval(intervalRef.current);
+  }, [gameOver]);
 
   useEffect(() => {
     const keyup = (ev: KeyboardEvent) => {
@@ -47,16 +64,9 @@ const Board = () => {
       }
     };
 
-    intervalRef.current = setInterval(() => {
-      crawl();
-    }, 60);
-
     document.addEventListener("keyup", keyup);
 
-    return () => {
-      clearInterval(intervalRef.current);
-      document.removeEventListener("keyup", keyup);
-    };
+    return () => document.removeEventListener("keyup", keyup);
   }, []);
 
   return (

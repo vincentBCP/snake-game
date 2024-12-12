@@ -335,43 +335,47 @@ const useGameStore = create<{
     if (head.dir === "right" && direction === "left") return;
     if (head.dir === "left" && direction === "right") return;
 
+    let newHead: ISnakeSegment;
+
     switch (direction) {
       case "up":
-        snakeSegments.push({
+        newHead = {
           x: head.dir === "right" ? head.x + head.w - THICKNESS : head.x,
           y: head.y,
           w: THICKNESS,
           h: 0,
           dir: "up",
-        });
+        };
         break;
       case "right":
-        snakeSegments.push({
+        newHead = {
           x: head.x + THICKNESS,
           y: head.dir === "down" ? head.y + head.h - THICKNESS : head.y,
           w: 0,
           h: THICKNESS,
           dir: "right",
-        });
+        };
         break;
       case "down":
-        snakeSegments.push({
+        newHead = {
           x: head.dir === "right" ? head.x + head.w - THICKNESS : head.x,
           y: head.y + THICKNESS,
           w: THICKNESS,
           h: 0,
           dir: "down",
-        });
+        };
         break;
       default:
-        snakeSegments.push({
+        newHead = {
           x: head.x,
           y: head.dir === "down" ? head.y + head.h - THICKNESS : head.y,
           w: 0,
           h: THICKNESS,
           dir: "left",
-        });
+        };
     }
+
+    snakeSegments.push(newHead);
 
     set({ snakeSegments });
   },

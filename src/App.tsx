@@ -49,7 +49,7 @@ const App = () => {
 
     intervalRef.current = setInterval(() => {
       crawl();
-    }, 70);
+    }, 60);
 
     document.addEventListener("keyup", keyup);
 
